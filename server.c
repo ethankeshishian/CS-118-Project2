@@ -198,28 +198,26 @@ int main (int argc, char *argv[])
             n = recvfrom(sockfd, &recvpkt, PKT_SIZE, 0, (struct sockaddr *) &cliaddr, (socklen_t *) &cliaddrlen);
             if (n > 0) {
                 printRecv(&recvpkt);
-                unsigned int pktlen = recvpkt.length;
-
                 unsigned short prevack = recvpkt.acknum;
                 unsigned short prevseq = recvpkt.seqnum;
 
-                unsigned short newack = prevseq + pktlen; // must be fixed
-                unsigned short newseq = prevack;
+                if (!recvpkt.fin)
+                    cliSeqNum = prevseq + recvpkt.length;
+                else
+                    cliSeqNum++;
 
-                cliSeqNum = (cliSeqNum + 1) % MAX_SEQN;
-                if (recvpkt.fin) {
-                    // cliSeqNum = (cliSeqNum + 1) % MAX_SEQN;
+                if (recvpkt.ack)
+                    seqNum = prevack;
+                
+                // ETHAN TODO: You need to actually turn the packets into files
+                // Use the code in the establish connection section to figure this out
 
-                    // buildPkt(&ackpkt, newseq, newack % MAX_SEQN, 0, 1, 0, 0, 0, NULL);
-                    // printSend(&ackpkt, 0);
-                    // sendto(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr*) &cliaddr, cliaddrlen);
+                buildPkt(&ackpkt, seqNum, cliSeqNum % MAX_SEQN, 0, 0, 1, 0, 0, NULL);
+                printSend(&ackpkt, 0);
+                sendto(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr*) &cliaddr, cliaddrlen);
 
+                if (recvpkt.fin) { 
                     break;
-                }
-                else {
-                    buildPkt(&ackpkt, newseq, newack % MAX_SEQN, 0, 0, 1, 0, 0, NULL);
-                    printSend(&ackpkt, 0);
-                    sendto(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr*) &cliaddr, cliaddrlen);
                 }
             }
         }
@@ -227,7 +225,7 @@ int main (int argc, char *argv[])
         // *** End of your server implementation ***
 
         fclose(fp);
-        printf("milestone: end of server implementation\n");
+        printf("milestone: end of server implementation\n"); // REMOVE LATER
         // =====================================
         // Connection Teardown: This procedure is provided to you directly and
         // is already working.
