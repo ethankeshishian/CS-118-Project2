@@ -208,15 +208,33 @@ int main (int argc, char *argv[])
     //       single data packet, and then tears down the connection without
     //       handling data loss.
     //       Only for demo purpose. DO NOT USE IT in your final submission
-    while (1) {
+    
+    while (1) { // break out of while after full file accepted
         n = recvfrom(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr *) &servaddr, (socklen_t *) &servaddrlen);
-        if (n > 0) {
-            break;
+        if (n > 0){
+            printRecv(&ackpkt);
+            unsigned short prevack = ackpkt.acknum;
+            unsigned short prevseq = ackpkt.seqnum;
+
+            m = fread(buf, 1, PAYLOAD_SIZE, fp);
+
+            unsigned short newack = prevseq + 1;
+            unsigned short newseq = prevack;
+            // printf("%zu", m);
+            if (m <= 0) break;
+            buildPkt(&pkts[0], newseq, newack % MAX_SEQN, 0, 0, 0, 0, m, buf);
+            printSend(&pkts[0], 0);
+            // timer?
+            sendto(sockfd, &pkts[0], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);
         }
+        // if (n > 0) {
+        //     break;
+        // }
     }
 
     // *** End of your client implementation ***
     fclose(fp);
+    printf("milestone: end of client implementation\n");
 
     // =====================================
     // Connection Teardown: This procedure is provided to you directly and is
