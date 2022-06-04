@@ -192,6 +192,9 @@ int main (int argc, char *argv[])
         //       a single data packet, and then tears down the connection
         //       without handling data loss.
         //       Only for demo purpose. DO NOT USE IT in your final submission
+        
+        fclose(fp);
+
         struct packet recvpkt;
 
         while(1) {
@@ -200,15 +203,43 @@ int main (int argc, char *argv[])
                 printRecv(&recvpkt);
                 unsigned short prevack = recvpkt.acknum;
                 unsigned short prevseq = recvpkt.seqnum;
+                
+                if (recvpkt.seqnum == prevseq) {
+                    printf("hi");
 
-                if (!recvpkt.fin)
+                    int length = snprintf(NULL, 0, "%d", i) + 6;
+                    char* filename = malloc(length);
+                    snprintf(filename, length, "%d.file", i);
+
+                    fp = fopen(filename, "a");
+                    free(filename);
+                    if (fp == NULL) {
+                        perror("ERROR: File could not be created\n");
+                        exit(1);
+                    }
+
+                    size_t r = fwrite(recvpkt.payload, 1, recvpkt.length, fp);
+
+                    fclose(fp);
+
+                    // printf("payload: %s\nlength: %u\nwritten: %lu", recvpkt.payload, recvpkt.length, r);
+
+                    // seqNum = ackpkt.acknum;
+                    // cliSeqNum = (ackpkt.seqnum + ackpkt.length) % MAX_SEQN;
+                }
+
+                if (!recvpkt.fin){
                     cliSeqNum = prevseq + recvpkt.length;
+                }
                 else
                     cliSeqNum++;
 
                 if (recvpkt.ack)
                     seqNum = prevack;
-                
+
+                printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
+                printf("%u\n", recvpkt.length);
+
                 // ETHAN TODO: You need to actually turn the packets into files
                 // Use the code in the establish connection section to figure this out
 
