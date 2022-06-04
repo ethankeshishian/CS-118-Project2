@@ -203,8 +203,21 @@ int main (int argc, char *argv[])
                 printRecv(&recvpkt);
                 unsigned short prevack = recvpkt.acknum;
                 unsigned short prevseq = recvpkt.seqnum;
+
+                if (!recvpkt.fin){
+                    cliSeqNum = prevseq + recvpkt.length;
+                }
+                else
+                    cliSeqNum++;
+
+                if (recvpkt.ack)
+                    seqNum = prevack;
+
+                printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
+                printf("prevseq: %hu\n", prevseq);
+                printf("recvpktlength: %u\n", recvpkt.length);
                 
-                if (recvpkt.seqnum == prevseq) {
+                if (recvpkt.seqnum + recvpkt.length == cliSeqNum) {
                     printf("hi");
 
                     int length = snprintf(NULL, 0, "%d", i) + 6;
@@ -228,17 +241,7 @@ int main (int argc, char *argv[])
                     // cliSeqNum = (ackpkt.seqnum + ackpkt.length) % MAX_SEQN;
                 }
 
-                if (!recvpkt.fin){
-                    cliSeqNum = prevseq + recvpkt.length;
-                }
-                else
-                    cliSeqNum++;
 
-                if (recvpkt.ack)
-                    seqNum = prevack;
-
-                printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
-                printf("%u\n", recvpkt.length);
 
                 // ETHAN TODO: You need to actually turn the packets into files
                 // Use the code in the establish connection section to figure this out
