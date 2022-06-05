@@ -197,7 +197,8 @@ int main (int argc, char *argv[])
 
         struct packet recvpkt;
 
-        unsigned short maxseq = ackpkt.acknum;
+        unsigned short maxseq = ackpkt.acknum - n + 12;
+        printf("%d", maxseq);
         unsigned short prevlen = ackpkt.length;
 
         while(1) {
@@ -237,6 +238,8 @@ int main (int argc, char *argv[])
                 }
 
                 size_t r = fwrite(recvpkt.payload, 1, recvpkt.length, fp);
+
+                printf("writing\n");
 
                 fclose(fp);
 
