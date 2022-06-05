@@ -205,7 +205,6 @@ int main (int argc, char *argv[])
         while(1) {
             n = recvfrom(sockfd, &recvpkt, PKT_SIZE, 0, (struct sockaddr *) &cliaddr, (socklen_t *) &cliaddrlen);
             if (n > 0) {
-                printf("%d", n);
                 printRecv(&recvpkt);
                 unsigned short prevack = recvpkt.acknum;
                 // unsigned short prevseq = recvpkt.seqnum;
@@ -218,7 +217,6 @@ int main (int argc, char *argv[])
                 }
                 else if (recvpkt.fin){
                     maxseq++;
-                    break;
                 }
                 else continue;
 
@@ -258,6 +256,8 @@ int main (int argc, char *argv[])
                 }
             }
         }
+        cliSeqNum = recvpkt.seqnum++;
+        printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
 
         // *** End of your server implementation ***
 
