@@ -208,10 +208,8 @@ int main (int argc, char *argv[])
                 printRecv(&recvpkt);
                 unsigned short prevack = recvpkt.acknum;
                 // unsigned short prevseq = recvpkt.seqnum;
-                unsigned short currseq = maxseq;
-                printf("max: %d, curr %d length %d prevlen %d\n", maxseq, currseq, recvpkt.length, prevlen);
-                if (start || (maxseq + recvpkt.length == recvpkt.seqnum && !recvpkt.fin)) {
-                    // prevlen = recvpkt.length;
+                printf("max: %d, length %d maxseq + recpkt.len mod maxseq %d\n", maxseq, recvpkt.length, (maxseq + recvpkt.length) % MAX_SEQN);
+                if (start || ((maxseq + recvpkt.length) % MAX_SEQN == recvpkt.seqnum && !recvpkt.fin)) {
                     maxseq = recvpkt.seqnum;
                     start = 0;
                 }
