@@ -197,21 +197,24 @@ int main (int argc, char *argv[])
 
         struct packet recvpkt;
 
-        unsigned short maxseq = ackpkt.acknum - n + 12;
+        unsigned short maxseq = 0;
         printf("%d", maxseq);
         unsigned short prevlen = ackpkt.length;
+        int start = 1;
 
         while(1) {
             n = recvfrom(sockfd, &recvpkt, PKT_SIZE, 0, (struct sockaddr *) &cliaddr, (socklen_t *) &cliaddrlen);
             if (n > 0) {
+                printf("%d", n);
                 printRecv(&recvpkt);
                 unsigned short prevack = recvpkt.acknum;
                 // unsigned short prevseq = recvpkt.seqnum;
                 unsigned short currseq = maxseq;
                 printf("max: %d, curr %d length %d prevlen %d\n", maxseq, currseq, recvpkt.length, prevlen);
-                if (maxseq + recvpkt.length == recvpkt.seqnum && !recvpkt.fin) {
+                if (start || (maxseq + recvpkt.length == recvpkt.seqnum && !recvpkt.fin)) {
                     // prevlen = recvpkt.length;
                     maxseq = recvpkt.seqnum;
+                    start = 0;
                 }
                 else if (recvpkt.fin){
                     maxseq++;
