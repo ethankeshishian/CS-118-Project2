@@ -230,7 +230,7 @@ int main (int argc, char *argv[])
             }
             resend = 0;
             continue;
-        }
+        }        
         else if (isTimeout(timer)){
             resend = 1;
             continue;
@@ -239,7 +239,7 @@ int main (int argc, char *argv[])
             n = recvfrom(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr *) &servaddr, (socklen_t *) &servaddrlen);
             // printf("%d", n);
         }
-        greatest_acked = greatest_acked >= ackpkt.acknum ? greatest_acked : ackpkt.acknum;
+        greatest_acked = (greatest_acked >= ackpkt.acknum) ? greatest_acked : ackpkt.acknum % MAX_SEQN;
 
         // printf("fin_ack %d | greatest_acked %d\n", fin_ack, greatest_acked);
         if (done_transmitting && (fin_ack == greatest_acked)) {
@@ -255,9 +255,10 @@ int main (int argc, char *argv[])
                 unsigned short prevseq = ackpkt.seqnum;
                 
                 // if (done_transmitting) {
-                //     printf("FINACK %d\n", fin_ack);
-                //     printf("PREVACK %d\n", prevack);
-                //     // REMOVE THIS LATER
+                //      printf("FINACK %d\n", fin_ack);
+                //      printf("GREATEST_ACKED %d\n", greatest_acked);
+                //      printf("PREVACK %d\n", prevack);
+                //      // REMOVE THIS LATER
                 // }
 
                 // unsigned short newack = prevseq + 1; unneeded
@@ -298,16 +299,16 @@ int main (int argc, char *argv[])
                 }
                 // first_ten = 0; // after the first ten, we send each subsequent one individually with received acks
             } else {
-                // these are the individual ones
-                m = fread(buf, 1, PAYLOAD_SIZE, fp);
-                // printf("m %d | firstten %d\n", m, window_filling);
-                if (m <= 0) {
-                    // same logic as above
-                    // fin_ack = (seqNum + prev_m) % MAX_SEQN;
-                    done_transmitting = 1;
-                    goto fin;
-                }
                 for (short i = 0; i < window_filling; i++) {
+                    // these are the individual ones
+                    m = fread(buf, 1, PAYLOAD_SIZE, fp);
+                    // printf("m %d | firstten %d\n", m, window_filling);
+                    if (m <= 0) {
+                        // same logic as above
+                        // fin_ack = (seqNum + prev_m) % MAX_SEQN;
+                        done_transmitting = 1;
+                        goto fin;
+                    }
                     if (pkts[i].seqnum <= greatest_acked){
                         prev_m = m;
                         seqNum = seqNum + m;
