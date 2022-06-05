@@ -211,18 +211,46 @@ int main (int argc, char *argv[])
     //       Only for demo purpose. DO NOT USE IT in your final submission
     
     int start = 1; // we're handling the first packet here instead of above
-    int first_ten = 1;
+    int window_filling = 0;
     int done_transmitting = 0;
     int fin_ack_found = 0;
     unsigned short fin_ack = 0;
     int prev_m = 0;
+    unsigned short greatest_acked = 0;
+    int resend = 0;
 
     while (1) { // break out of while after full file accepted
-        if (!start)
+        if (resend) {
+            for (short i = 0; i < window_filling; i++) {
+                if (pkts[i].seqnum > greatest_acked && pkts[i].syn != 1){
+                    timer = setTimer();
+                    printSend(&pkts[i], 1);
+                    sendto(sockfd, &pkts[i], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);
+                }
+            }
+            resend = 0;
+            continue;
+        }
+        else if (isTimeout(timer)){
+            resend = 1;
+            continue;
+        }
+        else if (!start){
             n = recvfrom(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr *) &servaddr, (socklen_t *) &servaddrlen);
+            // printf("%d", n);
+        }
+        greatest_acked = greatest_acked >= ackpkt.acknum ? greatest_acked : ackpkt.acknum;
+
+        // printf("fin_ack %d | greatest_acked %d\n", fin_ack, greatest_acked);
+        if (done_transmitting && (fin_ack == greatest_acked)) {
+            fin_ack_found = 1;
+            goto fin;
+        }
+
         if (n > 0) {
             if (!start) {
                 printRecv(&ackpkt);
+                // fin_ack = ackpkt.seqnum;
                 unsigned short prevack = ackpkt.acknum;
                 unsigned short prevseq = ackpkt.seqnum;
                 
@@ -232,19 +260,17 @@ int main (int argc, char *argv[])
                 //     // REMOVE THIS LATER
                 // }
 
-                if (done_transmitting && (fin_ack == prevack)) {
-                    fin_ack_found = 1;
-                    goto fin;
-                }
                 // unsigned short newack = prevseq + 1; unneeded
                 // seqNum = prevack; only do this if there is an error to resend
             }
             // generate & send up to ten packets
-            if (first_ten) {
-                for (short i = 0; i < 10; i++) {
+            if (window_filling < WND_SIZE) {
+                for (short i = window_filling; i < 10; i++) {
                     m = fread(buf, 1, PAYLOAD_SIZE, fp);
+                    // printf("m %d | firstten %d\n", m, window_filling);
                     if (m <= 0) {
-                        fin_ack = (seqNum + prev_m) % MAX_SEQN; // calculate the final ack we're looking for
+                        // printf("fin_ack %d | greatest_acked %d | seqNum %d | prev_m %d\n", fin_ack, greatest_acked, seqNum, prev_m);
+                        // fin_ack = (seqNum + prev_m) % MAX_SEQN; // calculate the final ack we're looking for
                         done_transmitting = 1;
                         goto fin; // the only way to break out of a double loop immediately
                     } else {
@@ -256,32 +282,43 @@ int main (int argc, char *argv[])
                             timer = setTimer();
                             buildPkt(&pkts[i], seqNum, (synackpkt.seqnum + 1) % MAX_SEQN, 0, 0, 0, 1, m, buf);
                             start = 0;
+                            fin_ack = fin_ack >= pkts[i].seqnum ? fin_ack : pkts[i].seqnum;
                         } else {
                             seqNum = seqNum + m;
                             // Subsequent packets don't need an ACK per spec (set to 0)
+                            timer = setTimer();
                             buildPkt(&pkts[i], seqNum % MAX_SEQN, 0, 0, 0, 0, 0, m, buf);
                             printSend(&pkts[i], 0);
                             sendto(sockfd, &pkts[i], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);
+                            fin_ack = fin_ack >= pkts[i].seqnum ? fin_ack : pkts[i].seqnum;
                         }
                     
                     }
+                    window_filling++;
                 }
-                first_ten = 0; // after the first ten, we send each subsequent one individually with received acks
+                // first_ten = 0; // after the first ten, we send each subsequent one individually with received acks
             } else {
                 // these are the individual ones
                 m = fread(buf, 1, PAYLOAD_SIZE, fp);
+                // printf("m %d | firstten %d\n", m, window_filling);
                 if (m <= 0) {
                     // same logic as above
-                    fin_ack = (seqNum + prev_m) % MAX_SEQN;
+                    // fin_ack = (seqNum + prev_m) % MAX_SEQN;
                     done_transmitting = 1;
                     goto fin;
                 }
-                prev_m = m;
-                seqNum = seqNum + m;
-                // Subsequent packets don't need an ACK per spec (set to 0)
-                buildPkt(&pkts[0], seqNum % MAX_SEQN, 0, 0, 0, 0, 0, m, buf);
-                printSend(&pkts[0], 0);
-                sendto(sockfd, &pkts[0], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);
+                for (short i = 0; i < window_filling; i++) {
+                    if (pkts[i].seqnum <= greatest_acked){
+                        prev_m = m;
+                        seqNum = seqNum + m;
+                        // Subsequent packets don't need an ACK per spec (set to 0)
+                        timer = setTimer();
+                        buildPkt(&pkts[i], seqNum % MAX_SEQN, 0, 0, 0, 0, 0, m, buf);
+                        printSend(&pkts[i], 0);
+                        sendto(sockfd, &pkts[i], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);
+                        fin_ack = fin_ack >= pkts[i].seqnum ? fin_ack : pkts[i].seqnum;
+                    }
+                }
             }
             fin: { 
                 // if the fin ack is not found yet, don't break

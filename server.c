@@ -197,56 +197,53 @@ int main (int argc, char *argv[])
 
         struct packet recvpkt;
 
+        unsigned short maxseq = ackpkt.acknum;
+        unsigned short prevlen = ackpkt.length;
+
         while(1) {
             n = recvfrom(sockfd, &recvpkt, PKT_SIZE, 0, (struct sockaddr *) &cliaddr, (socklen_t *) &cliaddrlen);
             if (n > 0) {
                 printRecv(&recvpkt);
                 unsigned short prevack = recvpkt.acknum;
-                unsigned short prevseq = recvpkt.seqnum;
-
-                if (!recvpkt.fin){
-                    cliSeqNum = prevseq + recvpkt.length;
+                // unsigned short prevseq = recvpkt.seqnum;
+                unsigned short currseq = maxseq;
+                printf("max: %d, curr %d length %d prevlen %d\n", maxseq, currseq, recvpkt.length, prevlen);
+                if (maxseq + recvpkt.length == recvpkt.seqnum && !recvpkt.fin) {
+                    // prevlen = recvpkt.length;
+                    maxseq = recvpkt.seqnum;
                 }
-                else
-                    cliSeqNum++;
+                else if (recvpkt.fin){
+                    maxseq++;
+                    break;
+                }
+                else continue;
 
                 if (recvpkt.ack)
                     seqNum = prevack;
 
                 printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
-                printf("prevseq: %hu\n", prevseq);
+                // printf("prevseq: %hu\n", prevseq);
                 printf("recvpktlength: %u\n", recvpkt.length);
                 
-                if (recvpkt.seqnum + recvpkt.length == cliSeqNum) {
-                    printf("hi");
+                int length = snprintf(NULL, 0, "%d", i) + 6;
+                char* filename = malloc(length);
+                snprintf(filename, length, "%d.file", i);
 
-                    int length = snprintf(NULL, 0, "%d", i) + 6;
-                    char* filename = malloc(length);
-                    snprintf(filename, length, "%d.file", i);
-
-                    fp = fopen(filename, "a");
-                    free(filename);
-                    if (fp == NULL) {
-                        perror("ERROR: File could not be created\n");
-                        exit(1);
-                    }
-
-                    size_t r = fwrite(recvpkt.payload, 1, recvpkt.length, fp);
-
-                    fclose(fp);
-
-                    // printf("payload: %s\nlength: %u\nwritten: %lu", recvpkt.payload, recvpkt.length, r);
-
-                    // seqNum = ackpkt.acknum;
-                    // cliSeqNum = (ackpkt.seqnum + ackpkt.length) % MAX_SEQN;
+                fp = fopen(filename, "a");
+                free(filename);
+                if (fp == NULL) {
+                    perror("ERROR: File could not be created\n");
+                    exit(1);
                 }
 
+                size_t r = fwrite(recvpkt.payload, 1, recvpkt.length, fp);
 
+                fclose(fp);
 
-                // ETHAN TODO: You need to actually turn the packets into files
-                // Use the code in the establish connection section to figure this out
+                // seqNum = ackpkt.acknum;
+                // cliSeqNum = (ackpkt.seqnum + ackpkt.length) % MAX_SEQN;
 
-                buildPkt(&ackpkt, seqNum, cliSeqNum % MAX_SEQN, 0, 0, 1, 0, 0, NULL);
+                buildPkt(&ackpkt, seqNum, maxseq % MAX_SEQN, 0, 0, 1, 0, 0, NULL);
                 printSend(&ackpkt, 0);
                 sendto(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr*) &cliaddr, cliaddrlen);
 
