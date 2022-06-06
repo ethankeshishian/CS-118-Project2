@@ -311,8 +311,8 @@ int main (int argc, char *argv[])
             } else {
                 for (short i = 0; i < window_filling; i++) {
                     // these are the individual ones
-                    if ((pkts[i].seqnum <= greatest_acked && pkts[i].seqnum > prev_greatest) ||
-                        (prev_greatest > greatest_acked && (pkts[i].seqnum <= greatest_acked || pkts[i].seqnum > prev_greatest))){
+                    if ((pkts[i].seqnum <= greatest_acked && pkts[i].seqnum >= prev_greatest) ||
+                        (prev_greatest > greatest_acked && (pkts[i].seqnum <= greatest_acked || pkts[i].seqnum >= prev_greatest))){
                         m = fread(buf, 1, PAYLOAD_SIZE, fp);
                         // printf("m %d | firstten %d\n", m, window_filling);
                         if (m <= 0) {
