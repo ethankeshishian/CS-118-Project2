@@ -7,6 +7,8 @@ Ethan Keshishian - ethankeshishian@ucla.edu - 105422235
 
 From a high-level perspective, our server and client both accept an initial SYN connection. Following that, both enter an infinite loop that accepts one packet from each other at a time. On the client side, except in the case of the first non-SYN packet, the client waits to hear an ACK from the server. After that, it constructs up to ten packets to send in a given window to the server. On the server side, the server waits to hear for a packet from the client. Upon receiving a packet, it correctly places it into the received file on the server side. Both client and server are configured to detect packet loss in the event where a packet is expected but not received, and appropriately sends out a request for that packet or ACK in subsequent connections to one another.
 
+One major problem we faced was being able to send and receive packets correctly and transition into the FIN sequence accurately. It turned out that, for the most part, we weren't using the right sequence and ACK numbers where needed, and had to re-do certain parts to reflect the correct logic.
+
 ## Makefile
 
 This provides a couple make targets for things.
