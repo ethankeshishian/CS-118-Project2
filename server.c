@@ -268,7 +268,7 @@ int main (int argc, char *argv[])
 
         // *** End of your server implementation ***
 
-        fclose(fp);
+        // fclose(fp);
         // printf("milestone: end of server implementation\n"); // REMOVE LATER
         // =====================================
         // Connection Teardown: This procedure is provided to you directly and
