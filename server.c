@@ -151,7 +151,7 @@ int main (int argc, char *argv[])
                 n = recvfrom(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr *) &cliaddr, (socklen_t *) &cliaddrlen);
                 if (n > 0) {
                     printRecv(&ackpkt);
-                    printf("ackpkt.seqnum %d cliseqnum %d ackpkt.ack %d ackpkt.acknum %d synackpkt.seqnum + 1 %d", ackpkt.seqnum, cliSeqNum, ackpkt.ack, ackpkt.acknum, synackpkt.seqnum + 1);
+                    // printf("ackpkt.seqnum %d cliseqnum %d ackpkt.ack %d ackpkt.acknum %d synackpkt.seqnum + 1 %d", ackpkt.seqnum, cliSeqNum, ackpkt.ack, ackpkt.acknum, synackpkt.seqnum + 1);
                     if (ackpkt.seqnum == cliSeqNum && (ackpkt.ack || ackpkt.dupack) && ackpkt.acknum == (synackpkt.seqnum + 1) % MAX_SEQN) {
 
                         int length = snprintf(NULL, 0, "%d", i) + 6;
@@ -200,7 +200,7 @@ int main (int argc, char *argv[])
 
         struct packet recvpkt;
 
-        printf("maxseq %d | cliseqnum %d | ackpkt.length %d \n", maxseq, cliSeqNum, ackpkt.length);
+        // printf("maxseq %d | cliseqnum %d | ackpkt.length %d \n", maxseq, cliSeqNum, ackpkt.length);
         unsigned short prevlen = ackpkt.length;
         int start = 1;
 
@@ -210,7 +210,7 @@ int main (int argc, char *argv[])
                 printRecv(&recvpkt);
                 unsigned short prevack = recvpkt.acknum;
                 // unsigned short prevseq = recvpkt.seqnum;
-                printf("max: %d, length %d maxseq + recpkt.len mod maxseq %d\n", maxseq, recvpkt.length, (maxseq + recvpkt.length) % MAX_SEQN);
+                // printf("max: %d, length %d maxseq + recpkt.len mod maxseq %d\n", maxseq, recvpkt.length, (maxseq + recvpkt.length) % MAX_SEQN);
                 if (start){
                     start = 0;
                 }
@@ -232,9 +232,9 @@ int main (int argc, char *argv[])
                 if (recvpkt.ack)
                     seqNum = prevack;
 
-                printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
+                // printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
                 // printf("prevseq: %hu\n", prevseq);
-                printf("recvpktlength: %u\n", recvpkt.length);
+                // printf("recvpktlength: %u\n", recvpkt.length);
                 
                 int length = snprintf(NULL, 0, "%d", i) + 6;
                 char* filename = malloc(length);
@@ -248,8 +248,6 @@ int main (int argc, char *argv[])
                 }
 
                 size_t r = fwrite(recvpkt.payload, 1, recvpkt.length, fp);
-
-                printf("writing\n");
 
                 fclose(fp);
 
@@ -266,12 +264,12 @@ int main (int argc, char *argv[])
             }
         }
         cliSeqNum = recvpkt.seqnum++;
-        printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
+        // printf("recvseq: %hu\ncliseqnum: %hu\n", recvpkt.seqnum, cliSeqNum);
 
         // *** End of your server implementation ***
 
         fclose(fp);
-        printf("milestone: end of server implementation\n"); // REMOVE LATER
+        // printf("milestone: end of server implementation\n"); // REMOVE LATER
         // =====================================
         // Connection Teardown: This procedure is provided to you directly and
         // is already working.

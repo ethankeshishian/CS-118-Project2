@@ -217,8 +217,8 @@ int main (int argc, char *argv[])
     unsigned short fin_ack = 0;
     int prev_m = 0;
     unsigned short greatest_acked = synackpkt.acknum;
-    printf("synack %d\n", synackpkt.acknum);
-    printf("greatest before %d\n", greatest_acked);
+    // printf("synack %d\n", synackpkt.acknum);
+    // printf("greatest before %d\n", greatest_acked);
     unsigned short prev_greatest = 0;
     int resend = 0;
     int timeout_index = -1;
@@ -226,9 +226,9 @@ int main (int argc, char *argv[])
     while (1) { // break out of while after full file accepted
         if (resend) {
             for (short i = 0; i < window_filling; i++) {
-                printf("resending i: %d | seq: %d\n", i, pkts[i].seqnum);
+                // printf("resending i: %d | seq: %d\n", i, pkts[i].seqnum);
                 int resend_window = (greatest_acked + (WND_SIZE * PAYLOAD_SIZE)) % MAX_SEQN;
-                printf("resend window: %d | greatest_acked: %d\n", resend_window, greatest_acked);
+                // printf("resend window: %d | greatest_acked: %d\n", resend_window, greatest_acked);
                 if (((pkts[i].seqnum > greatest_acked && pkts[i].seqnum <= resend_window) ||
                 (greatest_acked > resend_window && (pkts[i].seqnum < resend_window || pkts[i].seqnum > greatest_acked)))
                  && pkts[i].syn != 1){
@@ -252,7 +252,7 @@ int main (int argc, char *argv[])
         }
 
         if (done_transmitting && (fin_ack == greatest_acked)) {
-            printf("fin_ack %d | greatest_acked %d\n", fin_ack, greatest_acked);
+            // printf("fin_ack %d | greatest_acked %d\n", fin_ack, greatest_acked);
             fin_ack_found = 1;
             goto fin;
         }
@@ -262,7 +262,7 @@ int main (int argc, char *argv[])
                 prev_greatest = greatest_acked;
                 greatest_acked = ackpkt.acknum;
             }
-            printf("n %d, isSynAck %c, start %d, greatest %d\n", n, ackpkt.syn, start, greatest_acked);
+            // printf("n %d, isSynAck %c, start %d, greatest %d\n", n, ackpkt.syn, start, greatest_acked);
             if (!start) {
                 printRecv(&ackpkt);
                 // fin_ack = ackpkt.seqnum;
@@ -271,8 +271,8 @@ int main (int argc, char *argv[])
             }
             // generate & send up to ten packets
             if (window_filling < WND_SIZE) {
-                printf("synack %d\n", synackpkt.acknum);
-                printf("greatest before %d\n", greatest_acked);
+                // printf("synack %d\n", synackpkt.acknum);
+                // printf("greatest before %d\n", greatest_acked);
                 for (short i = window_filling; i < 10; i++) {
                     m = fread(buf, 1, PAYLOAD_SIZE, fp);
                     // printf("m %d | firstten %d\n", m, window_filling);
@@ -344,7 +344,7 @@ int main (int argc, char *argv[])
 
     // *** End of your client implementation ***
     fclose(fp);
-    printf("milestone: end of client implementation\n"); // REMOVE LATER
+    // printf("milestone: end of client implementation\n"); // REMOVE LATER
 
     // =====================================
     // Connection Teardown: This procedure is provided to you directly and is
