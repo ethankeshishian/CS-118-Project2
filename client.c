@@ -216,15 +216,23 @@ int main (int argc, char *argv[])
     int fin_ack_found = 0;
     unsigned short fin_ack = 0;
     int prev_m = 0;
-    unsigned short greatest_acked = 0;
+    printf("synack %d\n", synackpkt.acknum);
+    unsigned short greatest_acked = synackpkt.acknum;
     unsigned short prev_greatest = 0;
     int resend = 0;
+    int timeout_index = -1;
 
     while (1) { // break out of while after full file accepted
         if (resend) {
             for (short i = 0; i < window_filling; i++) {
-                if (pkts[i].seqnum > greatest_acked && pkts[i].syn != 1){
+                printf("resending i: %d | seq: %d\n", i, pkts[i].seqnum);
+                int resend_window = (greatest_acked + (WND_SIZE * PAYLOAD_SIZE)) % MAX_SEQN;
+                printf("resend window: %d | greatest_acked: %d\n", resend_window, greatest_acked);
+                if (((pkts[i].seqnum > greatest_acked && pkts[i].seqnum <= resend_window) ||
+                (greatest_acked > resend_window && (pkts[i].seqnum < resend_window || pkts[i].seqnum > greatest_acked)))
+                 && pkts[i].syn != 1){
                     timer = setTimer();
+                    timeout_index = i;
                     printSend(&pkts[i], 1);
                     sendto(sockfd, &pkts[i], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);
                 }
@@ -234,6 +242,7 @@ int main (int argc, char *argv[])
         }        
         else if (isTimeout(timer)){
             resend = 1;
+            printTimeout(&pkts[timeout_index]);
             continue;
         }
         else if (!start){
@@ -276,6 +285,7 @@ int main (int argc, char *argv[])
                             printSend(&pkts[i], 0);
                             sendto(sockfd, &pkts[0], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);
                             timer = setTimer();
+                            timeout_index = i;
                             buildPkt(&pkts[i], seqNum, (synackpkt.seqnum + 1) % MAX_SEQN, 0, 0, 0, 1, m, buf);
                             start = 0;
                             fin_ack = pkts[i].seqnum;
@@ -283,6 +293,7 @@ int main (int argc, char *argv[])
                             seqNum = seqNum + m;
                             // Subsequent packets don't need an ACK per spec (set to 0)
                             timer = setTimer();
+                            timeout_index = i;
                             buildPkt(&pkts[i], seqNum % MAX_SEQN, 0, 0, 0, 0, 0, m, buf);
                             printSend(&pkts[i], 0);
                             sendto(sockfd, &pkts[i], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);
@@ -296,7 +307,8 @@ int main (int argc, char *argv[])
             } else {
                 for (short i = 0; i < window_filling; i++) {
                     // these are the individual ones
-                    if (pkts[i].seqnum <= greatest_acked && pkts[i].seqnum > prev_greatest){
+                    if ((pkts[i].seqnum <= greatest_acked && pkts[i].seqnum > prev_greatest) ||
+                        (prev_greatest > greatest_acked && (pkts[i].seqnum <= greatest_acked || pkts[i].seqnum > prev_greatest))){
                         m = fread(buf, 1, PAYLOAD_SIZE, fp);
                         // printf("m %d | firstten %d\n", m, window_filling);
                         if (m <= 0) {
@@ -309,6 +321,7 @@ int main (int argc, char *argv[])
                         seqNum = seqNum + m;
                         // Subsequent packets don't need an ACK per spec (set to 0)
                         timer = setTimer();
+                        timeout_index = i;
                         buildPkt(&pkts[i], seqNum % MAX_SEQN, 0, 0, 0, 0, 0, m, buf);
                         printSend(&pkts[i], 0);
                         sendto(sockfd, &pkts[i], PKT_SIZE, 0, (struct sockaddr*) &servaddr, servaddrlen);

@@ -216,7 +216,14 @@ int main (int argc, char *argv[])
                 else if (recvpkt.fin){
                     maxseq++;
                 }
-                else continue;
+                else {
+                    // sending dupack
+                    buildPkt(&ackpkt, seqNum, maxseq % MAX_SEQN, 0, 0, 0, 1, 0, NULL);
+                    printSend(&ackpkt, 0);
+                    sendto(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr*) &cliaddr, cliaddrlen);
+
+                    continue;
+                }
 
                 if (recvpkt.ack)
                     seqNum = prevack;
