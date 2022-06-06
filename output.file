@@ -1,0 +1,149 @@
+SEND 16807 0 SYN
+RECV 5281 16808 SYN ACK
+synack 16808
+greatest before 16808
+n 524, isSynAck L, start 1, greatest 16808
+synack 16808
+greatest before 16808
+SEND 16808 5282 ACK
+SEND 17320 0
+SEND 17832 0
+SEND 18344 0
+SEND 18856 0
+SEND 19368 0
+SEND 19880 0
+SEND 20392 0
+SEND 20904 0
+SEND 21416 0
+TIMEOUT 21416
+resending i: 0 | seq: 16808
+resend window: 21416 | greatest_acked: 16296
+RESEND 16808 5282
+resending i: 1 | seq: 17320
+resend window: 21416 | greatest_acked: 16296
+RESEND 17320 0
+resending i: 2 | seq: 17832
+resend window: 21416 | greatest_acked: 16296
+RESEND 17832 0
+resending i: 3 | seq: 18344
+resend window: 21416 | greatest_acked: 16296
+RESEND 18344 0
+resending i: 4 | seq: 18856
+resend window: 21416 | greatest_acked: 16296
+RESEND 18856 0
+resending i: 5 | seq: 19368
+resend window: 21416 | greatest_acked: 16296
+RESEND 19368 0
+resending i: 6 | seq: 19880
+resend window: 21416 | greatest_acked: 16296
+RESEND 19880 0
+resending i: 7 | seq: 20392
+resend window: 21416 | greatest_acked: 16296
+RESEND 20392 0
+resending i: 8 | seq: 20904
+resend window: 21416 | greatest_acked: 16296
+RESEND 20904 0
+resending i: 9 | seq: 21416
+resend window: 21416 | greatest_acked: 16296
+RESEND 21416 0
+TIMEOUT 21416
+resending i: 0 | seq: 16808
+resend window: 21416 | greatest_acked: 16296
+RESEND 16808 5282
+resending i: 1 | seq: 17320
+resend window: 21416 | greatest_acked: 16296
+RESEND 17320 0
+resending i: 2 | seq: 17832
+resend window: 21416 | greatest_acked: 16296
+RESEND 17832 0
+resending i: 3 | seq: 18344
+resend window: 21416 | greatest_acked: 16296
+RESEND 18344 0
+resending i: 4 | seq: 18856
+resend window: 21416 | greatest_acked: 16296
+RESEND 18856 0
+resending i: 5 | seq: 19368
+resend window: 21416 | greatest_acked: 16296
+RESEND 19368 0
+resending i: 6 | seq: 19880
+resend window: 21416 | greatest_acked: 16296
+RESEND 19880 0
+resending i: 7 | seq: 20392
+resend window: 21416 | greatest_acked: 16296
+RESEND 20392 0
+resending i: 8 | seq: 20904
+resend window: 21416 | greatest_acked: 16296
+RESEND 20904 0
+resending i: 9 | seq: 21416
+resend window: 21416 | greatest_acked: 16296
+RESEND 21416 0
+TIMEOUT 21416
+resending i: 0 | seq: 16808
+resend window: 21416 | greatest_acked: 16296
+RESEND 16808 5282
+resending i: 1 | seq: 17320
+resend window: 21416 | greatest_acked: 16296
+RESEND 17320 0
+resending i: 2 | seq: 17832
+resend window: 21416 | greatest_acked: 16296
+RESEND 17832 0
+resending i: 3 | seq: 18344
+resend window: 21416 | greatest_acked: 16296
+RESEND 18344 0
+resending i: 4 | seq: 18856
+resend window: 21416 | greatest_acked: 16296
+RESEND 18856 0
+resending i: 5 | seq: 19368
+resend window: 21416 | greatest_acked: 16296
+RESEND 19368 0
+resending i: 6 | seq: 19880
+resend window: 21416 | greatest_acked: 16296
+RESEND 19880 0
+resending i: 7 | seq: 20392
+resend window: 21416 | greatest_acked: 16296
+RESEND 20392 0
+resending i: 8 | seq: 20904
+resend window: 21416 | greatest_acked: 16296
+RESEND 20904 0
+resending i: 9 | seq: 21416
+resend window: 21416 | greatest_acked: 16296
+RESEND 21416 0
+TIMEOUT 21416
+resending i: 0 | seq: 16808
+resend window: 21416 | greatest_acked: 16296
+RESEND 16808 5282
+resending i: 1 | seq: 17320
+resend window: 21416 | greatest_acked: 16296
+RESEND 17320 0
+resending i: 2 | seq: 17832
+resend window: 21416 | greatest_acked: 16296
+RESEND 17832 0
+resending i: 3 | seq: 18344
+resend window: 21416 | greatest_acked: 16296
+RESEND 18344 0
+resending i: 4 | seq: 18856
+resend window: 21416 | greatest_acked: 16296
+RESEND 18856 0
+resending i: 5 | seq: 19368
+resend window: 21416 | greatest_acked: 16296
+RESEND 19368 0
+resending i: 6 | seq: 19880
+resend window: 21416 | greatest_acked: 16296
+RESEND 19880 0
+resending i: 7 | seq: 20392
+resend window: 21416 | greatest_acked: 16296
+RESEND 20392 0
+resending i: 8 | seq: 20904
+resend window: 21416 | greatest_acked: 16296
+RESEND 20904 0
+resending i: 9 | seq: 21416
+resend window: 21416 | greatest_acked: 16296
+RESEND 21416 0
+TIMEOUT 21416
+resending i: 0 | seq: 16808
+resend window: 21416 | greatest_acked: 16296
+RESEND 16808 5282
+resending i: 1 | seq: 17320
+resend window: 21416 | greatest_acked: 16296
+RESEND 17320 0
+resending i: 2 | seq: 17

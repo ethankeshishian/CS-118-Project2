@@ -128,6 +128,7 @@ int main (int argc, char *argv[])
         FILE* fp;
 
         struct packet synpkt, synackpkt, ackpkt;
+        unsigned short maxseq = 0;
 
         while (1) {
             n = recvfrom(sockfd, &synpkt, PKT_SIZE, 0, (struct sockaddr *) &cliaddr, (socklen_t *) &cliaddrlen);
@@ -150,7 +151,8 @@ int main (int argc, char *argv[])
                 n = recvfrom(sockfd, &ackpkt, PKT_SIZE, 0, (struct sockaddr *) &cliaddr, (socklen_t *) &cliaddrlen);
                 if (n > 0) {
                     printRecv(&ackpkt);
-                    if (ackpkt.seqnum == cliSeqNum && ackpkt.ack && ackpkt.acknum == (synackpkt.seqnum + 1) % MAX_SEQN) {
+                    printf("ackpkt.seqnum %d cliseqnum %d ackpkt.ack %d ackpkt.acknum %d synackpkt.seqnum + 1 %d", ackpkt.seqnum, cliSeqNum, ackpkt.ack, ackpkt.acknum, synackpkt.seqnum + 1);
+                    if (ackpkt.seqnum == cliSeqNum && (ackpkt.ack || ackpkt.dupack) && ackpkt.acknum == (synackpkt.seqnum + 1) % MAX_SEQN) {
 
                         int length = snprintf(NULL, 0, "%d", i) + 6;
                         char* filename = malloc(length);
@@ -167,6 +169,7 @@ int main (int argc, char *argv[])
 
                         seqNum = ackpkt.acknum;
                         cliSeqNum = (ackpkt.seqnum + ackpkt.length) % MAX_SEQN;
+                        maxseq = ackpkt.seqnum;
 
                         buildPkt(&ackpkt, seqNum, cliSeqNum, 0, 0, 1, 0, 0, NULL);
                         printSend(&ackpkt, 0);
@@ -197,8 +200,7 @@ int main (int argc, char *argv[])
 
         struct packet recvpkt;
 
-        unsigned short maxseq = 0;
-        printf("%d", maxseq);
+        printf("maxseq %d | cliseqnum %d | ackpkt.length %d \n", maxseq, cliSeqNum, ackpkt.length);
         unsigned short prevlen = ackpkt.length;
         int start = 1;
 
@@ -209,9 +211,11 @@ int main (int argc, char *argv[])
                 unsigned short prevack = recvpkt.acknum;
                 // unsigned short prevseq = recvpkt.seqnum;
                 printf("max: %d, length %d maxseq + recpkt.len mod maxseq %d\n", maxseq, recvpkt.length, (maxseq + recvpkt.length) % MAX_SEQN);
-                if (start || ((maxseq + recvpkt.length) % MAX_SEQN == recvpkt.seqnum && !recvpkt.fin)) {
-                    maxseq = recvpkt.seqnum;
+                if (start){
                     start = 0;
+                }
+                if (!start &&((maxseq + recvpkt.length) % MAX_SEQN == recvpkt.seqnum && !recvpkt.fin)) {
+                    maxseq = recvpkt.seqnum;
                 }
                 else if (recvpkt.fin){
                     maxseq++;
